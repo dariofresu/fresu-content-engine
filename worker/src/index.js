@@ -14,6 +14,10 @@
 
 const PLATFORMS = ["linkedin", "youtube", "meta", "tiktok", "x"];
 
+// the Worker secret that must exist before each platform's Connect can work
+const NEEDS = { linkedin: "LINKEDIN_CLIENT_ID", youtube: "GOOGLE_CLIENT_ID",
+                meta: "META_APP_ID", tiktok: "TIKTOK_CLIENT_KEY", x: "X_CLIENT_ID" };
+
 const html = (body) => new Response(
   `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Connect — Fresu Content Engine</title>
@@ -183,14 +187,19 @@ export default {
       const rows = [];
       for (const p of PLATFORMS) {
         const t = await getTok(env, p);
+        const ready = !!env[NEEDS[p]];
         const label = p === "meta" ? "facebook + instagram" : p;
         rows.push(`<div class="row"><b>${label}</b>
-          <span class="st ${t ? "on" : ""}">${t ? "✓ connected" + (t.extra?.page_name ? " · " + t.extra.page_name : t.extra?.name ? " · " + t.extra.name : "") : "not connected"}</span>
+          <span class="st ${t ? "on" : ""}">${t ? "✓ connected" + (t.extra?.page_name ? " · " + t.extra.page_name : t.extra?.name ? " · " + t.extra.name : "")
+                                              : ready ? "ready to connect" : "app keys missing"}</span>
           ${t ? `<a class="btn ghost" href="/auth/${p}/disconnect">disconnect</a>`
-              : `<a class="btn" href="/auth/${p}/start">Connect</a>`}</div>`);
+              : ready ? `<a class="btn" href="/auth/${p}/start">Connect</a>`
+                      : `<a class="btn ghost" href="${env.PLANNER_URL}connect.html">setup guide</a>`}</div>`);
       }
       return html(`<h1>Fresu <span>Content Engine</span></h1>
-        <p>Connect each account once — a window opens, you approve, done.</p>
+        <p>Connect each account once — a window opens, you approve, done.<br>
+        Rows saying <b>app keys missing</b> need their one-time developer app first —
+        follow the <a class="back" href="${env.PLANNER_URL}connect.html">setup guide</a>, steps ① and ②.</p>
         ${rows.join("")}
         <p style="margin-top:1rem"><a class="back" href="${env.PLANNER_URL}">← back to the planner</a></p>`);
     }
@@ -199,6 +208,12 @@ export default {
       const prov = provs[seg2];
 
       if (seg3 === "start") {
+        if (!env[NEEDS[seg2]])
+          return html(`<h1>Not set up yet</h1>
+            <p>The <b>${seg2}</b> developer app keys are not in Cloudflare yet.
+            Follow steps ① and ② in the
+            <a class="back" href="${env.PLANNER_URL}connect.html">setup guide</a>, then come back.</p>
+            <p><a class="back" href="/connect">← back</a></p>`);
         const state = rnd();
         const extra = { state };
         const params = { ...prov.params, state };
