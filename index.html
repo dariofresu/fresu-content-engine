@@ -108,11 +108,19 @@ function renderFilters() {
   ).join("");
 }
 
-fetch("queue/queue.json?cachebust=" + Date.now())
+const url = location.protocol === "file:"
+  ? "queue/queue.json"
+  : "queue/queue.json?cachebust=" + Date.now();
+fetch(url)
   .then(r => r.json())
   .then(d => { posts = d.posts || []; renderFilters(); render(); })
-  .catch(e => document.getElementById("list").innerHTML =
-    `<p class="empty">Could not load queue: ${e}</p>`);
+  .catch(() => {
+    document.getElementById("list").innerHTML = location.protocol === "file:"
+      ? `<p class="empty">You opened this page directly from disk — the browser
+         blocks reading the queue file here.<br>It works on the live GitHub
+         Pages site (or any local server).</p>`
+      : `<p class="empty">Could not load queue/queue.json.</p>`;
+  });
 </script>
 </body>
 </html>
