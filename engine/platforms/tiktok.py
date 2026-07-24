@@ -14,6 +14,8 @@ ROTATED = Path(__file__).resolve().parent.parent.parent / "queue" / ".tiktok_ref
 
 
 def _access_token():
+    if os.environ.get("TIKTOK_ACCESS_TOKEN"):    # provided by the token broker
+        return os.environ["TIKTOK_ACCESS_TOKEN"]
     refresh = ROTATED.read_text().strip() if ROTATED.exists() else os.environ["TIKTOK_REFRESH_TOKEN"]
     r = requests.post(f"{API}/oauth/token/", data={
         "client_key": os.environ["TIKTOK_CLIENT_KEY"],

@@ -14,6 +14,8 @@ UPLOAD_URL = ("https://www.googleapis.com/upload/youtube/v3/videos"
 
 
 def _access_token():
+    if os.environ.get("YT_ACCESS_TOKEN"):        # provided by the token broker
+        return os.environ["YT_ACCESS_TOKEN"]
     r = requests.post(TOKEN_URL, data={
         "client_id": os.environ["YT_CLIENT_ID"],
         "client_secret": os.environ["YT_CLIENT_SECRET"],

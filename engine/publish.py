@@ -38,7 +38,40 @@ def due(post):
     return when <= datetime.now(timezone.utc)
 
 
+def load_worker_tokens():
+    """If a token-broker Worker is configured, fetch fresh access tokens and
+    map them onto the env vars the platform modules read. Falls back to
+    plain GitHub Secrets when WORKER_URL is unset."""
+    worker = os.environ.get("WORKER_URL")
+    if not worker:
+        return
+    import requests
+    r = requests.get(worker.rstrip("/") + "/api/tokens", headers={
+        "Authorization": "Bearer " + os.environ["ENGINE_KEY"]}, timeout=30)
+    r.raise_for_status()
+    toks = r.json()
+    m = {}
+    if "linkedin" in toks and "error" not in toks["linkedin"]:
+        m["LINKEDIN_ACCESS_TOKEN"] = toks["linkedin"]["access"]
+        m["LINKEDIN_AUTHOR_URN"] = toks["linkedin"]["author_urn"]
+    if "meta" in toks and "error" not in toks["meta"]:
+        m["META_PAGE_TOKEN"] = toks["meta"]["access"]
+        m["META_PAGE_ID"] = toks["meta"]["page_id"]
+        if toks["meta"].get("ig_user_id"):
+            m["IG_USER_ID"] = toks["meta"]["ig_user_id"]
+    if "youtube" in toks and "error" not in toks["youtube"]:
+        m["YT_ACCESS_TOKEN"] = toks["youtube"]["access"]
+    if "tiktok" in toks and "error" not in toks["tiktok"]:
+        m["TIKTOK_ACCESS_TOKEN"] = toks["tiktok"]["access"]
+    if "x" in toks and "error" not in toks["x"]:
+        m["X_OAUTH2_TOKEN"] = toks["x"]["access"]
+    os.environ.update(m)
+    for p, t in toks.items():
+        print(f"[tokens] {p}: {'ERROR ' + t['error'] if 'error' in t else 'ok'}")
+
+
 def main():
+    load_worker_tokens()
     data = json.loads(QUEUE.read_text(encoding="utf-8"))
     changed = False
     for post in data["posts"]:
