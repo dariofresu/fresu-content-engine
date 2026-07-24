@@ -4,3 +4,4 @@ __pycache__/
 tokens.local.json
 queue/.tiktok_refresh_token
 .DS_Store
+worker/.wrangler/
