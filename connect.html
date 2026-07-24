@@ -14,6 +14,10 @@
   a { color:var(--accent); }
   h1 { font-size:1.35rem; } h1 span { color:var(--accent); }
   .sub { color:var(--muted); margin:.3rem 0 1.2rem; }
+  .hero { background:var(--panel); border:1px solid var(--accent); border-radius:12px;
+          padding:1rem 1.2rem; margin-bottom:1.2rem; }
+  .hero a.btn { display:inline-block; background:var(--accent); color:#08281d; text-decoration:none;
+                border-radius:8px; padding:.5rem 1.1rem; font-weight:600; margin-top:.5rem; }
   .progress { background:var(--panel); border:1px solid var(--line); border-radius:10px;
               padding:.8rem 1rem; margin-bottom:1.4rem; font-size:.92rem; }
   .bar { height:8px; background:var(--bg); border-radius:99px; margin-top:.5rem; overflow:hidden; }
@@ -31,53 +35,55 @@
   li b { color:var(--accent); }
   .copy { display:inline-flex; align-items:center; gap:.4rem; background:var(--bg);
           border:1px solid var(--line); border-radius:6px; padding:.15rem .55rem;
-          font:.83rem/1.4 Consolas,monospace; color:var(--text); cursor:pointer; }
+          font:.83rem/1.4 Consolas,monospace; color:var(--text); cursor:pointer;
+          word-break:break-all; }
   .copy:hover { border-color:var(--accent); }
   .note { background:var(--panel2); border-left:3px solid var(--warn); border-radius:6px;
           padding:.5rem .8rem; font-size:.85rem; color:var(--muted); margin:.6rem 0; }
   .check { display:flex; align-items:center; gap:.55rem; margin-top:1rem; color:var(--muted);
            font-size:.9rem; cursor:pointer; user-select:none; }
   .check input { width:1.05rem; height:1.05rem; accent-color:var(--accent); }
-  .claude { background:var(--panel2); border:1px dashed var(--accent); border-radius:8px;
-            padding:.6rem .9rem; font-size:.88rem; margin-top:.8rem; }
   footer { color:var(--muted); font-size:.8rem; margin-top:2rem; text-align:center; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Connect your platforms <span>step by step</span></h1>
-  <p class="sub">Work top to bottom — easiest first. Every value you need is a click-to-copy chip.
-    Do this next to Claude (in chat or with the Chrome extension) and you'll never be stuck:
-    Claude watches your screen and tells you exactly what to press.
+  <h1>Connect your platforms <span>the easy way</span></h1>
+  <p class="sub">For every platform it's the same 3 moves: ① create its (free) developer app —
+    one time, you're the vendor — ② paste that app's two keys into your Cloudflare backend,
+    ③ press Connect. Do it next to Claude and you'll never be stuck.
     <a href="index.html">← back to the planner</a></p>
+
+  <div class="hero">
+    <b>Your Connect buttons live here:</b><br>
+    <a class="btn" href="https://fresu-content-engine-auth.fresu-dario.workers.dev/connect" target="_blank">Open the Connect page →</a>
+    <div style="color:var(--muted);font-size:.85rem;margin-top:.5rem">
+      Keys are pasted here (Cloudflare → your Worker → Settings):
+      <a href="https://dash.cloudflare.com/5d9ac455a0e71e57fd0e6a345a201976/workers/services/view/fresu-content-engine-auth/production/settings" target="_blank">
+      Variables and Secrets ↗</a> — use <b>Add → Type: Secret</b>, names must match exactly.
+    </div>
+  </div>
 
   <div class="progress">Connected: <b id="doneCount">0</b> of 6
     <div class="bar"><div id="barFill"></div></div>
   </div>
 
   <details data-p="x">
-    <summary>1 · X (Twitter) <span class="tag">~10 min · easiest</span></summary>
+    <summary>1 · X (Twitter) <span class="tag">~10 min</span></summary>
     <div class="body">
       <ol>
-        <li>Open <a href="https://developer.x.com/en/portal/dashboard" target="_blank">developer.x.com dashboard</a>
-            and sign in with the account that should post. Accept the free tier.</li>
-        <li>Create a Project + App (any names, e.g. <span class="copy" data-c="fresu-content-engine">fresu-content-engine 📋</span>).</li>
-        <li>In the app: <b>User authentication settings → Set up</b> →
-            permissions <b>Read and write</b> → type <b>Web App</b> →
-            Callback URL <span class="copy" data-c="https://dariofresu.github.io/fresu-content-engine/">https://dariofresu.github.io/fresu-content-engine/ 📋</span> →
-            Website <span class="copy" data-c="https://fresuelectronics.com">https://fresuelectronics.com 📋</span> → Save.</li>
-        <li>Go to the <b>Keys and tokens</b> tab. You need 4 values:
-            <b>API Key</b>, <b>API Key Secret</b> (top section — Regenerate if hidden), and
-            <b>Access Token &amp; Secret</b> (click Generate — must say
-            <i>"Created with Read and Write permissions"</i>).</li>
-        <li>Open <a href="https://github.com/dariofresu/fresu-content-engine/settings/secrets/actions" target="_blank">
-            your repo's Secrets page</a> and add each one — names must match exactly:
-            <span class="copy" data-c="X_API_KEY">X_API_KEY 📋</span>
-            <span class="copy" data-c="X_API_SECRET">X_API_SECRET 📋</span>
-            <span class="copy" data-c="X_ACCESS_TOKEN">X_ACCESS_TOKEN 📋</span>
-            <span class="copy" data-c="X_ACCESS_SECRET">X_ACCESS_SECRET 📋</span></li>
+        <li>Open <a href="https://developer.x.com/en/portal/dashboard" target="_blank">developer.x.com</a>,
+            sign in with the posting account, accept the Free tier, create a Project + App.</li>
+        <li>In the app: <b>User authentication settings → Set up</b>:
+            permissions <b>Read and write</b> · type <b>Web App</b> · Callback URI
+            <span class="copy" data-c="https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/x/callback">https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/x/callback 📋</span>
+            · Website <span class="copy" data-c="https://dariofresu.github.io/fresu-content-engine/">https://dariofresu.github.io/fresu-content-engine/ 📋</span> → Save.</li>
+        <li>It shows the <b>OAuth 2.0 Client ID and Client Secret</b> — paste them into
+            Cloudflare (link in the green box) as secrets
+            <span class="copy" data-c="X_CLIENT_ID">X_CLIENT_ID 📋</span> and
+            <span class="copy" data-c="X_CLIENT_SECRET">X_CLIENT_SECRET 📋</span>.</li>
+        <li>On the <b>Connect page</b> press <b>Connect</b> next to x → approve → done.</li>
       </ol>
-      <div class="claude">🤖 Then tell Claude: <b>"X secrets are in"</b> — Claude sends a test post and fixes anything that errors.</div>
       <label class="check"><input type="checkbox"> Mark X as connected</label>
     </div>
   </details>
@@ -86,51 +92,38 @@
     <summary>2 · LinkedIn <span class="tag">~15 min</span></summary>
     <div class="body">
       <ol>
-        <li>Open <a href="https://www.linkedin.com/developers/apps/new" target="_blank">LinkedIn → create app</a>.
-            App name e.g. <span class="copy" data-c="Fresu Content Engine">Fresu Content Engine 📋</span>,
-            attach your company Page, add any logo, create.</li>
+        <li><a href="https://www.linkedin.com/developers/apps/new" target="_blank">Create the LinkedIn app</a>
+            (name e.g. <span class="copy" data-c="Fresu Content Engine">Fresu Content Engine 📋</span>, attach your company Page).</li>
         <li><b>Products</b> tab → request <b>Share on LinkedIn</b> and
-            <b>Sign In with LinkedIn using OpenID Connect</b> (both approve instantly).</li>
+            <b>Sign In with LinkedIn using OpenID Connect</b> (instant approval).</li>
         <li><b>Auth</b> tab → Authorized redirect URLs → add
-            <span class="copy" data-c="http://localhost:8765/callback">http://localhost:8765/callback 📋</span></li>
-        <li>Copy the <b>Client ID</b> and <b>Client Secret</b> from the Auth tab.</li>
-        <li>On your PC, in a terminal in the repo folder, run
-            <span class="copy" data-c="python scripts/authorize_linkedin.py CLIENT_ID CLIENT_SECRET">python scripts/authorize_linkedin.py CLIENT_ID CLIENT_SECRET 📋</span>
-            (replace the two values). A browser opens — approve — the terminal prints the two secrets.</li>
-        <li>Add them at <a href="https://github.com/dariofresu/fresu-content-engine/settings/secrets/actions" target="_blank">repo Secrets</a>:
-            <span class="copy" data-c="LINKEDIN_ACCESS_TOKEN">LINKEDIN_ACCESS_TOKEN 📋</span>
-            <span class="copy" data-c="LINKEDIN_AUTHOR_URN">LINKEDIN_AUTHOR_URN 📋</span></li>
+            <span class="copy" data-c="https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/linkedin/callback">https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/linkedin/callback 📋</span></li>
+        <li>Copy Client ID + Client Secret (same Auth tab) into Cloudflare as
+            <span class="copy" data-c="LINKEDIN_CLIENT_ID">LINKEDIN_CLIENT_ID 📋</span> and
+            <span class="copy" data-c="LINKEDIN_CLIENT_SECRET">LINKEDIN_CLIENT_SECRET 📋</span>.</li>
+        <li><b>Connect page → Connect</b> next to linkedin → approve.</li>
       </ol>
-      <div class="note">LinkedIn tokens last ~60 days — when posts start failing, redo step 5–6 (2 minutes). Claude will remind you.</div>
-      <div class="claude">🤖 Then tell Claude: <b>"LinkedIn secrets are in"</b>.</div>
+      <div class="note">LinkedIn sessions last ~60 days — when it expires you just press Connect again. One click, no keys.</div>
       <label class="check"><input type="checkbox"> Mark LinkedIn as connected</label>
     </div>
   </details>
 
   <details data-p="meta">
-    <summary>3 · Facebook + Instagram <span class="tag">~30 min · one app for both</span></summary>
+    <summary>3 · Facebook + Instagram <span class="tag">~25 min · one app for both</span></summary>
     <div class="body">
-      <div class="note">Before starting: your Instagram must be a <b>Business or Creator</b> account
-        linked to your Facebook Page (Instagram app → Settings → Business tools; or
-        Meta Business Suite → Settings → Linked accounts).</div>
+      <div class="note">Before starting: Instagram must be a <b>Business/Creator</b> account linked to
+        your Facebook Page (Meta Business Suite → Settings → Linked accounts).</div>
       <ol>
-        <li>Open <a href="https://developers.facebook.com/apps/create/" target="_blank">developers.facebook.com → Create app</a>
-            → use case <b>Other</b> → type <b>Business</b> → name e.g.
-            <span class="copy" data-c="Fresu Content Engine">Fresu Content Engine 📋</span>.</li>
-        <li>The app stays in <b>Development mode</b> — that's correct forever (it posts only to your own pages).</li>
-        <li>Open <a href="https://developers.facebook.com/tools/explorer" target="_blank">Graph API Explorer</a> →
-            select your app → <b>Get User Access Token</b> → add permissions:
-            <span class="copy" data-c="pages_manage_posts pages_read_engagement pages_show_list instagram_basic instagram_content_publish business_management">pages_manage_posts, pages_read_engagement, pages_show_list, instagram_basic, instagram_content_publish, business_management 📋</span>
-            → Generate token, approve the popups, copy the token.</li>
-        <li>In a terminal in the repo folder run
-            <span class="copy" data-c="python scripts/authorize_meta.py APP_ID APP_SECRET SHORT_TOKEN">python scripts/authorize_meta.py APP_ID APP_SECRET SHORT_TOKEN 📋</span>
-            (App ID/Secret are in the app's Settings → Basic). It prints the three values.</li>
-        <li>Add at <a href="https://github.com/dariofresu/fresu-content-engine/settings/secrets/actions" target="_blank">repo Secrets</a>:
-            <span class="copy" data-c="META_PAGE_ID">META_PAGE_ID 📋</span>
-            <span class="copy" data-c="META_PAGE_TOKEN">META_PAGE_TOKEN 📋</span>
-            <span class="copy" data-c="IG_USER_ID">IG_USER_ID 📋</span></li>
+        <li><a href="https://developers.facebook.com/apps/create/" target="_blank">Create the Meta app</a>:
+            use case <b>Other</b> → type <b>Business</b>. It stays in Development mode forever — that's correct.</li>
+        <li>Add product <b>Facebook Login for Business</b> → Settings → Valid OAuth Redirect URIs →
+            <span class="copy" data-c="https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/meta/callback">https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/meta/callback 📋</span></li>
+        <li>App Settings → Basic: copy <b>App ID</b> and <b>App Secret</b> into Cloudflare as
+            <span class="copy" data-c="META_APP_ID">META_APP_ID 📋</span> and
+            <span class="copy" data-c="META_APP_SECRET">META_APP_SECRET 📋</span>.</li>
+        <li><b>Connect page → Connect</b> next to facebook + instagram → approve the popups.
+            Your Page and Instagram account are detected automatically.</li>
       </ol>
-      <div class="claude">🤖 Then tell Claude: <b>"Meta secrets are in"</b>.</div>
       <label class="check"><input type="checkbox"> Mark Facebook + Instagram as connected</label>
     </div>
   </details>
@@ -139,71 +132,62 @@
     <summary>4 · YouTube <span class="tag">~20 min</span></summary>
     <div class="body">
       <ol>
-        <li>Open <a href="https://console.cloud.google.com/projectcreate" target="_blank">Google Cloud → new project</a>,
-            name <span class="copy" data-c="fresu-content-engine">fresu-content-engine 📋</span>.</li>
-        <li><a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">Enable
-            YouTube Data API v3</a> for that project.</li>
-        <li><b>OAuth consent screen</b>: External → fill app name + your email twice → Save.
-            Then — important — press <b>Publish app</b> so status says <b>In production</b>
-            (in Testing mode your connection dies every 7 days).</li>
+        <li><a href="https://console.cloud.google.com/projectcreate" target="_blank">Create a Google Cloud project</a>
+            (name <span class="copy" data-c="fresu-content-engine">fresu-content-engine 📋</span>), then
+            <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">enable the YouTube Data API v3</a>.</li>
+        <li><b>OAuth consent screen</b>: External → fill name + emails → save → press
+            <b>Publish app</b> (must say <b>In production</b>, or the connection dies weekly).</li>
         <li><b>Credentials → Create credentials → OAuth client ID</b> → Web application →
             Authorized redirect URI:
-            <span class="copy" data-c="http://localhost:8765/callback">http://localhost:8765/callback 📋</span></li>
-        <li>In a terminal in the repo folder run
-            <span class="copy" data-c="python scripts/authorize_youtube.py CLIENT_ID CLIENT_SECRET">python scripts/authorize_youtube.py CLIENT_ID CLIENT_SECRET 📋</span>
-            → browser opens (it will warn "unverified app" — click Advanced → continue; it's your own app) → approve → terminal prints the refresh token.</li>
-        <li>Add at <a href="https://github.com/dariofresu/fresu-content-engine/settings/secrets/actions" target="_blank">repo Secrets</a>:
-            <span class="copy" data-c="YT_CLIENT_ID">YT_CLIENT_ID 📋</span>
-            <span class="copy" data-c="YT_CLIENT_SECRET">YT_CLIENT_SECRET 📋</span>
-            <span class="copy" data-c="YT_REFRESH_TOKEN">YT_REFRESH_TOKEN 📋</span></li>
+            <span class="copy" data-c="https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/youtube/callback">https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/youtube/callback 📋</span></li>
+        <li>Copy the Client ID + Client Secret into Cloudflare as
+            <span class="copy" data-c="GOOGLE_CLIENT_ID">GOOGLE_CLIENT_ID 📋</span> and
+            <span class="copy" data-c="GOOGLE_CLIENT_SECRET">GOOGLE_CLIENT_SECRET 📋</span>.</li>
+        <li><b>Connect page → Connect</b> next to youtube → Google warns "unverified app" →
+            <b>Advanced → continue</b> (it's your own app) → approve.</li>
       </ol>
-      <div class="note">Default quota ≈ 6 uploads/day — plenty for scheduled Shorts.</div>
-      <div class="claude">🤖 Then tell Claude: <b>"YouTube secrets are in"</b>.</div>
+      <div class="note">Default quota ≈ 6 uploads/day.</div>
       <label class="check"><input type="checkbox"> Mark YouTube as connected</label>
     </div>
   </details>
 
   <details data-p="tiktok">
-    <summary>5 · TikTok <span class="tag">~30 min + a few days' review</span></summary>
+    <summary>5 · TikTok <span class="tag">~25 min + a few days' review</span></summary>
     <div class="body">
       <ol>
         <li>Register at <a href="https://developers.tiktok.com/" target="_blank">developers.tiktok.com</a>
             → Manage apps → Create app.</li>
-        <li>Add products <b>Login Kit</b> and <b>Content Posting API</b>; scopes
-            <span class="copy" data-c="video.upload, video.publish">video.upload, video.publish 📋</span>.</li>
-        <li>Redirect URI:
-            <span class="copy" data-c="https://dariofresu.github.io/fresu-content-engine/">https://dariofresu.github.io/fresu-content-engine/ 📋</span></li>
-        <li>In a terminal run
-            <span class="copy" data-c="python scripts/authorize_tiktok.py CLIENT_KEY CLIENT_SECRET https://dariofresu.github.io/fresu-content-engine/">python scripts/authorize_tiktok.py CLIENT_KEY CLIENT_SECRET https://dariofresu.github.io/fresu-content-engine/ 📋</span>
-            → approve in browser → you land back on your planner with <b>?code=…</b> in the address bar → copy that code into the terminal.</li>
-        <li>Add at <a href="https://github.com/dariofresu/fresu-content-engine/settings/secrets/actions" target="_blank">repo Secrets</a>:
-            <span class="copy" data-c="TIKTOK_CLIENT_KEY">TIKTOK_CLIENT_KEY 📋</span>
-            <span class="copy" data-c="TIKTOK_CLIENT_SECRET">TIKTOK_CLIENT_SECRET 📋</span>
-            <span class="copy" data-c="TIKTOK_REFRESH_TOKEN">TIKTOK_REFRESH_TOKEN 📋</span></li>
-        <li>Submit the app for <b>review/audit</b>. Until approved, posts arrive as
-            <b>private</b> — you tap "make public" in the TikTok app. After approval they publish public automatically.</li>
+        <li>Add products <b>Login Kit</b> and <b>Content Posting API</b>, scopes
+            <span class="copy" data-c="video.upload, video.publish">video.upload, video.publish 📋</span>,
+            redirect URI
+            <span class="copy" data-c="https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/tiktok/callback">https://fresu-content-engine-auth.fresu-dario.workers.dev/auth/tiktok/callback 📋</span></li>
+        <li>Copy Client Key + Client Secret into Cloudflare as
+            <span class="copy" data-c="TIKTOK_CLIENT_KEY">TIKTOK_CLIENT_KEY 📋</span> and
+            <span class="copy" data-c="TIKTOK_CLIENT_SECRET">TIKTOK_CLIENT_SECRET 📋</span>.</li>
+        <li><b>Connect page → Connect</b> next to tiktok → approve.</li>
+        <li>Submit the app for <b>audit</b>. Until approved, posts arrive as <b>private</b> —
+            you tap "make public" in the TikTok app; afterwards they go out public automatically.</li>
       </ol>
-      <div class="claude">🤖 Then tell Claude: <b>"TikTok secrets are in"</b>.</div>
       <label class="check"><input type="checkbox"> Mark TikTok as connected</label>
     </div>
   </details>
 
   <details data-p="editing">
-    <summary>6 · Website editing (GitHub token) <span class="tag">~3 min · lets you post from this site</span></summary>
+    <summary>6 · Website editing (GitHub token) <span class="tag">~3 min</span></summary>
     <div class="body">
       <ol>
-        <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">GitHub → new fine-grained token</a>.</li>
-        <li>Name <span class="copy" data-c="fresu-content-engine-planner">fresu-content-engine-planner 📋</span>,
-            expiration <b>1 year</b> (custom).</li>
-        <li>Repository access → <b>Only select repositories</b> → <b>fresu-content-engine</b>.</li>
-        <li>Permissions → Repository permissions → <b>Contents → Read and write</b>. Generate.</li>
-        <li>Copy the token, open the <a href="index.html">planner</a> → <b>⚙ Settings</b> → paste → Save.</li>
+        <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">GitHub → new fine-grained token</a>:
+            name <span class="copy" data-c="fresu-content-engine-planner">fresu-content-engine-planner 📋</span>,
+            expiration <b>1 year</b>.</li>
+        <li>Repository access → <b>Only select repositories</b> → <b>fresu-content-engine</b>;
+            Permissions → <b>Contents: Read and write</b>. Generate.</li>
+        <li>Copy the token → open the <a href="index.html">planner</a> → <b>⚙ Settings</b> → paste → Save.</li>
       </ol>
       <label class="check"><input type="checkbox"> Mark website editing as active</label>
     </div>
   </details>
 
-  <footer>fresu-content-engine · do this together with Claude — you never have to figure anything out alone</footer>
+  <footer>fresu-content-engine · your backend: fresu-content-engine-auth.fresu-dario.workers.dev</footer>
 </main>
 <script>
 document.querySelectorAll(".copy").forEach(el => el.onclick = () => {
@@ -211,7 +195,6 @@ document.querySelectorAll(".copy").forEach(el => el.onclick = () => {
   const t = el.innerHTML; el.innerHTML = "copied ✓";
   setTimeout(() => el.innerHTML = t, 900);
 });
-const boxes = document.querySelectorAll("details .check input");
 function refresh() {
   let done = 0;
   document.querySelectorAll("details").forEach(d => {
@@ -226,7 +209,7 @@ function refresh() {
   document.getElementById("doneCount").textContent = done;
   document.getElementById("barFill").style.width = (done / 6 * 100) + "%";
 }
-boxes.forEach(b => b.onchange = e => {
+document.querySelectorAll("details .check input").forEach(b => b.onchange = e => {
   const d = e.target.closest("details");
   localStorage.setItem("fce_conn_" + d.dataset.p, e.target.checked ? "1" : "0");
   refresh();

@@ -1,5 +1,10 @@
 # One-time setup — platform credentials
 
+> **⚠ Superseded:** the easy path is now the Cloudflare Worker backend with
+> one-click Connect buttons — follow **connect.html** on the planner site.
+> This file documents the older CLI/GitHub-Secrets fallback, which still works
+> if the Worker is not deployed.
+
 Everything here is free. Each platform gives you keys that go into
 **GitHub → your repo → Settings → Secrets and variables → Actions → New repository secret**.
 You paste secrets yourself; run the `scripts/authorize_*.py` helpers locally —

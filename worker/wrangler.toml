@@ -3,13 +3,13 @@ main = "src/index.js"
 compatibility_date = "2026-07-01"
 
 kv_namespaces = [
-  { binding = "TOKENS", id = "REPLACED_ON_DEPLOY" }
+  { binding = "TOKENS", id = "72d2b491af544b4ca3a11c01771e2a4f" }
 ]
 
 [vars]
 # public URL of this worker, set after first deploy, e.g.
 # https://fresu-content-engine-auth.<account>.workers.dev
-BASE_URL = "REPLACED_ON_DEPLOY"
+BASE_URL = "https://fresu-content-engine-auth.fresu-dario.workers.dev"
 PLANNER_URL = "https://dariofresu.github.io/fresu-content-engine/"
 
 # Secrets (set with: wrangler secret put <NAME>):
