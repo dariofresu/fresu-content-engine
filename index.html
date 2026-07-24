@@ -123,6 +123,7 @@
   <div class="topbar">
     <h1>Fresu <span>Content Engine</span></h1>
     <button class="btn" id="newBtn">+ New post</button>
+    <a class="btn ghost" href="connect.html" style="text-decoration:none">🔌 Connect platforms</a>
     <button class="btn ghost" id="settingsBtn">⚙ Settings</button>
   </div>
   <div id="banner"></div>
@@ -288,7 +289,7 @@ function render() {
   renderFilters();
   $("viewList").classList.toggle("active", view === "list");
   $("viewCal").classList.toggle("active", view === "cal");
-  if (!token()) banner(`Read-only: add a GitHub token in <b>⚙ Settings</b> to create and edit posts.`);
+  if (!token()) banner(`Read-only mode. Follow <a href="connect.html">🔌 Connect platforms</a> — step 6 enables editing from this site.`);
   view === "list" ? renderList() : renderCal();
 }
 
