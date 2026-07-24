@@ -155,6 +155,7 @@
     <div class="actions">
       <button class="btn danger" id="deleteBtn" style="margin-right:auto">Delete</button>
       <button class="btn ghost" id="cancelBtn">Cancel</button>
+      <button class="btn ghost" id="nowBtn">Publish now</button>
       <button class="btn" id="saveBtn">Save</button>
     </div>
   </div>
@@ -196,6 +197,8 @@ let pendingFile = null;    // File chosen but not yet uploaded
 let calCursor = new Date();
 
 const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g,
+  c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const token = () => localStorage.getItem("fce_token") || "";
 const b64decode = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
 const b64encodeText = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
@@ -297,17 +300,22 @@ function renderList() {
   $("content").innerHTML = shown.map(p => {
     const chips = PLATFORMS.filter(n => p.platforms?.[n]?.enabled).map(n => {
       const r = (p.results || {})[n];
-      if (r?.ok) return `<span class="chip ok"><a href="${r.url}" target="_blank">${n} ✓</a></span>`;
-      if (r && !r.ok) return `<span class="chip err" title="${(r.error || "").replace(/"/g, "&quot;")}">${n} ✗</span>`;
+      if (r?.ok) return `<span class="chip ok"><a href="${esc(r.url)}" target="_blank">${n} ✓</a></span>`;
+      if (r && !r.ok) return `<span class="chip err">${n} ✗</span>`;
       return `<span class="chip">${n}</span>`;
+    }).join("");
+    const errors = PLATFORMS.map(n => {
+      const r = (p.results || {})[n];
+      return r && !r.ok ? `<p class="ptext" style="color:var(--failed)">${n}: ${esc(r.error)}</p>` : "";
     }).join("");
     const text = p.platforms ? (Object.values(p.platforms).find(c => c.enabled && c.text)?.text || "") : "";
     return `<article class="post">
-      <header><h2>${p.title || p.id}</h2>
+      <header><h2>${esc(p.title || p.id)}</h2>
         <span class="when">${fmt(p.publish_at)}</span>
         <span class="status ${p.status}">${p.status}</span></header>
       <div class="chips">${chips}</div>
-      ${text ? `<p class="ptext">${text}</p>` : ""}
+      ${text ? `<p class="ptext">${esc(text)}</p>` : ""}
+      ${errors}
       ${mediaTag(p)}
       <div class="rowbtns">
         <button class="btn ghost small" data-edit="${p.id}">Edit</button>
@@ -335,7 +343,7 @@ function renderCal() {
       if (!p.publish_at) return false;
       const pd = new Date(p.publish_at);
       return pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth() && pd.getDate() === d.getDate();
-    }).map(p => `<span class="evt ${p.status}" data-edit="${p.id}" title="${p.title || p.id}">${p.title || p.id}</span>`).join("");
+    }).map(p => `<span class="evt ${p.status}" data-edit="${p.id}" title="${esc(p.title || p.id)}">${esc(p.title || p.id)}</span>`).join("");
     cells += `<div class="day ${inMonth ? "" : "other"} ${isToday ? "today" : ""}">${d.getDate()}${evts}</div>`;
   }
   $("content").innerHTML = `
@@ -454,8 +462,12 @@ function updateCount() {
   }
 }
 
-async function savePost() {
+async function savePost(publishNow) {
   const btn = $("saveBtn");
+  if (publishNow === true) {
+    const local = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
+    $("fWhen").value = local.toISOString().slice(0, 16);
+  }
   // capture current textarea into texts
   if (activeTab === "master") texts.master = $("fText").value;
   else texts[activeTab] = $("fText").value.trim() === texts.master.trim() ? "" : $("fText").value;
@@ -527,7 +539,8 @@ function openSettings() { $("fToken").value = token(); $("settingsOverlay").clas
 $("newBtn").onclick = () => openEditor(null);
 $("settingsBtn").onclick = openSettings;
 $("cancelBtn").onclick = closeEditor;
-$("saveBtn").onclick = savePost;
+$("saveBtn").onclick = () => savePost(false);
+$("nowBtn").onclick = () => savePost(true);
 $("deleteBtn").onclick = deletePost;
 $("settingsCancel").onclick = () => $("settingsOverlay").classList.remove("open");
 $("settingsSave").onclick = () => {

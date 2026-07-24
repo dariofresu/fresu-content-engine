@@ -26,8 +26,13 @@ PUBLISHERS = {
 }
 
 
+MAX_ATTEMPTS = 3
+
+
 def due(post):
-    if post.get("status") != "scheduled" or not post.get("publish_at"):
+    if post.get("status") not in ("scheduled", "failed") or not post.get("publish_at"):
+        return False
+    if post.get("attempts", 0) >= MAX_ATTEMPTS:
         return False
     when = datetime.fromisoformat(post["publish_at"].replace("Z", "+00:00"))
     return when <= datetime.now(timezone.utc)
@@ -56,7 +61,14 @@ def main():
                                  "at": datetime.now(timezone.utc).isoformat()}
                 all_ok = False
                 print(f"[FAIL] {post['id']} -> {name}: {e}", file=sys.stderr)
-        post["status"] = "published" if all_ok else "failed"
+        if all_ok:
+            post["status"] = "published"
+        else:
+            post["attempts"] = post.get("attempts", 0) + 1
+            post["status"] = "failed"
+            if post["attempts"] < MAX_ATTEMPTS:
+                print(f"[retry] {post['id']} attempt {post['attempts']}/{MAX_ATTEMPTS}, "
+                      "will retry next run")
         changed = True
 
     if changed:
