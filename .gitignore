@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+tokens.local.json
+queue/.tiktok_refresh_token
+.DS_Store

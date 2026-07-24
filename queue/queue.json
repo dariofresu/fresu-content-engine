@@ -1,0 +1,21 @@
+{
+  "posts": [
+    {
+      "id": "2026-07-24-demo",
+      "status": "draft",
+      "publish_at": null,
+      "media": null,
+      "media_type": null,
+      "title": "Demo post — replace me",
+      "platforms": {
+        "x": { "enabled": false, "text": "" },
+        "linkedin": { "enabled": false, "text": "" },
+        "facebook": { "enabled": false, "text": "" },
+        "instagram": { "enabled": false, "text": "" },
+        "youtube": { "enabled": false, "text": "", "video_title": "", "tags": [] },
+        "tiktok": { "enabled": false, "text": "" }
+      },
+      "results": {}
+    }
+  ]
+}

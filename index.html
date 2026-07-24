@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fresu Content Engine</title>
+<style>
+  :root {
+    --bg: #0d1520; --panel: #16202e; --line: #24344a;
+    --text: #e8eef6; --muted: #8fa3bb; --accent: #4fd1a5;
+    --draft: #8fa3bb; --scheduled: #e9c46a; --published: #4fd1a5; --failed: #e76f51;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--text);
+         font: 15px/1.5 "Segoe UI", system-ui, sans-serif; padding: 2rem 1rem; }
+  main { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; letter-spacing: .02em; }
+  h1 span { color: var(--accent); }
+  .sub { color: var(--muted); margin: .25rem 0 1.5rem; }
+  .filters { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .filters button { background: var(--panel); color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: .3rem .9rem;
+    cursor: pointer; font: inherit; font-size: .85rem; }
+  .filters button.active { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+  .post { background: var(--panel); border: 1px solid var(--line);
+          border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: .8rem; }
+  .post header { display: flex; justify-content: space-between; gap: 1rem;
+                 align-items: baseline; flex-wrap: wrap; }
+  .post h2 { font-size: 1.05rem; }
+  .when { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+  .status { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em;
+            padding: .15rem .6rem; border-radius: 999px; border: 1px solid; }
+  .status.draft { color: var(--draft); border-color: var(--draft); }
+  .status.scheduled { color: var(--scheduled); border-color: var(--scheduled); }
+  .status.published { color: var(--published); border-color: var(--published); }
+  .status.failed { color: var(--failed); border-color: var(--failed); }
+  .chips { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .6rem; }
+  .chip { font-size: .78rem; padding: .12rem .55rem; border-radius: 6px;
+          background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
+  .chip.ok { color: var(--published); border-color: var(--published); }
+  .chip.err { color: var(--failed); border-color: var(--failed); }
+  .chip a { color: inherit; text-decoration: none; }
+  .text { margin-top: .6rem; color: var(--muted); font-size: .9rem;
+          white-space: pre-wrap; max-height: 6em; overflow: hidden; }
+  .media { margin-top: .6rem; }
+  .media img, .media video { max-width: 240px; max-height: 160px;
+                             border-radius: 8px; border: 1px solid var(--line); }
+  .empty { color: var(--muted); padding: 3rem 0; text-align: center; }
+  footer { color: var(--muted); font-size: .8rem; margin-top: 2rem; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Fresu <span>Content Engine</span></h1>
+  <p class="sub">Queue &amp; calendar — publishes automatically every 15 minutes via GitHub Actions.</p>
+  <div class="filters" id="filters"></div>
+  <div id="list"><p class="empty">Loading queue…</p></div>
+  <footer>fresu-content-engine · self-hosted · €0/month</footer>
+</main>
+<script>
+const STATUSES = ["all", "draft", "scheduled", "published", "failed"];
+let posts = [], filter = "all";
+
+function fmt(iso) {
+  if (!iso) return "no date";
+  return new Date(iso).toLocaleString(undefined,
+    { weekday: "short", day: "numeric", month: "short",
+      hour: "2-digit", minute: "2-digit" });
+}
+
+function render() {
+  const list = document.getElementById("list");
+  const shown = posts
+    .filter(p => filter === "all" || p.status === filter)
+    .sort((a, b) => (a.publish_at || "9999").localeCompare(b.publish_at || "9999"));
+  if (!shown.length) { list.innerHTML = '<p class="empty">Nothing here.</p>'; return; }
+  list.innerHTML = shown.map(p => {
+    const platforms = Object.entries(p.platforms || {})
+      .filter(([, c]) => c.enabled)
+      .map(([name]) => {
+        const r = (p.results || {})[name];
+        if (r && r.ok) return `<span class="chip ok"><a href="${r.url}" target="_blank">${name} ✓</a></span>`;
+        if (r && !r.ok) return `<span class="chip err" title="${(r.error || "").replace(/"/g, "&quot;")}">${name} ✗</span>`;
+        return `<span class="chip">${name}</span>`;
+      }).join("");
+    const firstText = Object.values(p.platforms || {}).find(c => c.enabled && c.text)?.text || "";
+    const media = p.media
+      ? (/\.(mp4|mov|webm)$/i.test(p.media)
+          ? `<div class="media"><video src="queue/${p.media}" controls muted></video></div>`
+          : `<div class="media"><img src="queue/${p.media}" alt=""></div>`)
+      : "";
+    return `<article class="post">
+      <header>
+        <h2>${p.title || p.id}</h2>
+        <span class="when">${fmt(p.publish_at)}</span>
+        <span class="status ${p.status}">${p.status}</span>
+      </header>
+      <div class="chips">${platforms}</div>
+      ${firstText ? `<p class="text">${firstText}</p>` : ""}
+      ${media}
+    </article>`;
+  }).join("");
+}
+
+function renderFilters() {
+  document.getElementById("filters").innerHTML = STATUSES.map(s =>
+    `<button class="${s === filter ? "active" : ""}" onclick="filter='${s}';renderFilters();render()">${s}</button>`
+  ).join("");
+}
+
+fetch("queue/queue.json?cachebust=" + Date.now())
+  .then(r => r.json())
+  .then(d => { posts = d.posts || []; renderFilters(); render(); })
+  .catch(e => document.getElementById("list").innerHTML =
+    `<p class="empty">Could not load queue: ${e}</p>`);
+</script>
+</body>
+</html>
