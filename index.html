@@ -6,121 +6,547 @@
 <title>Fresu Content Engine</title>
 <style>
   :root {
-    --bg: #0d1520; --panel: #16202e; --line: #24344a;
-    --text: #e8eef6; --muted: #8fa3bb; --accent: #4fd1a5;
+    --bg: #0d1520; --panel: #16202e; --panel2: #1c2938; --line: #24344a;
+    --text: #e8eef6; --muted: #8fa3bb; --accent: #4fd1a5; --accent-dark: #2e8f72;
     --draft: #8fa3bb; --scheduled: #e9c46a; --published: #4fd1a5; --failed: #e76f51;
   }
   * { box-sizing: border-box; margin: 0; }
   body { background: var(--bg); color: var(--text);
-         font: 15px/1.5 "Segoe UI", system-ui, sans-serif; padding: 2rem 1rem; }
-  main { max-width: 880px; margin: 0 auto; }
-  h1 { font-size: 1.5rem; letter-spacing: .02em; }
+         font: 15px/1.5 "Segoe UI", system-ui, sans-serif; padding: 1.2rem 1rem 3rem; }
+  main { max-width: 980px; margin: 0 auto; }
+  a { color: var(--accent); }
+  button { font: inherit; cursor: pointer; }
+
+  .topbar { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  h1 { font-size: 1.35rem; letter-spacing: .02em; margin-right: auto; }
   h1 span { color: var(--accent); }
-  .sub { color: var(--muted); margin: .25rem 0 1.5rem; }
-  .filters { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-  .filters button { background: var(--panel); color: var(--muted);
-    border: 1px solid var(--line); border-radius: 999px; padding: .3rem .9rem;
-    cursor: pointer; font: inherit; font-size: .85rem; }
-  .filters button.active { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+  .btn { background: var(--accent); color: #08281d; border: 0; border-radius: 8px;
+         padding: .5rem 1.1rem; font-weight: 600; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .btn.small { padding: .25rem .7rem; font-size: .82rem; font-weight: 500; }
+  .btn.danger { background: transparent; color: var(--failed); border: 1px solid var(--failed); }
+
+  .banner { background: var(--panel); border: 1px solid var(--scheduled); color: var(--scheduled);
+            border-radius: 10px; padding: .7rem 1rem; margin-bottom: 1rem; font-size: .9rem; }
+  .banner.err { border-color: var(--failed); color: var(--failed); }
+  .banner.ok { border-color: var(--accent); color: var(--accent); }
+
+  .viewtabs { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .viewtabs button, .filters button { background: var(--panel); color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: .32rem .95rem; font-size: .85rem; }
+  .viewtabs button.active, .filters button.active {
+    color: var(--bg); background: var(--accent); border-color: var(--accent); }
+  .filters { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+
   .post { background: var(--panel); border: 1px solid var(--line);
           border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: .8rem; }
-  .post header { display: flex; justify-content: space-between; gap: 1rem;
+  .post header { display: flex; justify-content: space-between; gap: .8rem;
                  align-items: baseline; flex-wrap: wrap; }
   .post h2 { font-size: 1.05rem; }
   .when { color: var(--muted); font-size: .85rem; white-space: nowrap; }
-  .status { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em;
-            padding: .15rem .6rem; border-radius: 999px; border: 1px solid; }
+  .status { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em;
+            padding: .14rem .6rem; border-radius: 999px; border: 1px solid; }
   .status.draft { color: var(--draft); border-color: var(--draft); }
   .status.scheduled { color: var(--scheduled); border-color: var(--scheduled); }
   .status.published { color: var(--published); border-color: var(--published); }
   .status.failed { color: var(--failed); border-color: var(--failed); }
-  .chips { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .6rem; }
+  .chips { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .55rem; }
   .chip { font-size: .78rem; padding: .12rem .55rem; border-radius: 6px;
           background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
   .chip.ok { color: var(--published); border-color: var(--published); }
   .chip.err { color: var(--failed); border-color: var(--failed); }
   .chip a { color: inherit; text-decoration: none; }
-  .text { margin-top: .6rem; color: var(--muted); font-size: .9rem;
-          white-space: pre-wrap; max-height: 6em; overflow: hidden; }
-  .media { margin-top: .6rem; }
-  .media img, .media video { max-width: 240px; max-height: 160px;
-                             border-radius: 8px; border: 1px solid var(--line); }
-  .empty { color: var(--muted); padding: 3rem 0; text-align: center; }
+  .ptext { margin-top: .55rem; color: var(--muted); font-size: .9rem;
+           white-space: pre-wrap; max-height: 5.2em; overflow: hidden; }
+  .pmedia img, .pmedia video { max-width: 220px; max-height: 150px; margin-top: .6rem;
+                               border-radius: 8px; border: 1px solid var(--line); }
+  .rowbtns { display: flex; gap: .45rem; margin-top: .7rem; flex-wrap: wrap; }
+  .empty { color: var(--muted); padding: 2.5rem 0; text-align: center; }
+
+  /* calendar */
+  .cal-head { display: flex; align-items: center; gap: .8rem; margin-bottom: .7rem; }
+  .cal-head h3 { font-size: 1rem; min-width: 11ch; text-align: center; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal .dow { color: var(--muted); font-size: .72rem; text-align: center; padding: .2rem 0;
+              text-transform: uppercase; letter-spacing: .06em; }
+  .cal .day { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+              min-height: 84px; padding: .3rem .4rem; font-size: .78rem; color: var(--muted);
+              overflow: hidden; }
+  .cal .day.other { opacity: .35; }
+  .cal .day.today { border-color: var(--accent); }
+  .cal .evt { display: block; margin-top: .25rem; padding: .1rem .35rem; border-radius: 5px;
+              background: var(--panel2); color: var(--text); white-space: nowrap;
+              overflow: hidden; text-overflow: ellipsis; cursor: pointer; border-left: 3px solid; }
+  .cal .evt.draft { border-color: var(--draft); }
+  .cal .evt.scheduled { border-color: var(--scheduled); }
+  .cal .evt.published { border-color: var(--published); }
+  .cal .evt.failed { border-color: var(--failed); }
+
+  /* modal */
+  .overlay { position: fixed; inset: 0; background: rgba(5,10,16,.75); display: none;
+             align-items: flex-start; justify-content: center; overflow: auto; padding: 2rem 1rem; z-index: 10; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+           width: min(680px, 100%); padding: 1.3rem; }
+  .modal h2 { font-size: 1.15rem; margin-bottom: 1rem; }
+  label { display: block; font-size: .82rem; color: var(--muted); margin: .8rem 0 .25rem; }
+  input[type=text], input[type=datetime-local], input[type=password], textarea, select {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text);
+    border-radius: 8px; padding: .5rem .7rem; font: inherit; }
+  textarea { min-height: 90px; resize: vertical; }
+  .platgrid { display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .3rem; }
+  .plat { display: flex; align-items: center; gap: .3rem; background: var(--bg);
+          border: 1px solid var(--line); border-radius: 999px; padding: .25rem .7rem;
+          font-size: .84rem; color: var(--muted); cursor: pointer; user-select: none; }
+  .plat.on { color: var(--bg); background: var(--accent); border-color: var(--accent); font-weight: 600; }
+  .texttabs { display: flex; gap: .3rem; flex-wrap: wrap; margin: .8rem 0 .4rem; }
+  .texttabs button { background: var(--bg); border: 1px solid var(--line); color: var(--muted);
+                     border-radius: 6px 6px 0 0; padding: .25rem .7rem; font-size: .82rem; }
+  .texttabs button.active { color: var(--text); border-bottom-color: var(--panel); background: var(--panel2); }
+  .texttabs button.custom::after { content: "•"; color: var(--accent); margin-left: .25rem; }
+  .charcount { text-align: right; font-size: .75rem; color: var(--muted); margin-top: .2rem; }
+  .charcount.over { color: var(--failed); font-weight: 700; }
+  .drop { border: 2px dashed var(--line); border-radius: 10px; padding: 1rem; text-align: center;
+          color: var(--muted); font-size: .88rem; cursor: pointer; margin-top: .3rem; }
+  .drop.has { border-style: solid; }
+  .drop img, .drop video { max-width: 200px; max-height: 130px; border-radius: 8px; display: block; margin: .5rem auto 0; }
+  .modal .actions { display: flex; gap: .6rem; justify-content: flex-end; margin-top: 1.3rem; flex-wrap: wrap; }
+  .hint { font-size: .78rem; color: var(--muted); margin-top: .35rem; }
   footer { color: var(--muted); font-size: .8rem; margin-top: 2rem; text-align: center; }
+  .spin { display: inline-block; animation: r 1s linear infinite; }
+  @keyframes r { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 <main>
-  <h1>Fresu <span>Content Engine</span></h1>
-  <p class="sub">Queue &amp; calendar — publishes automatically every 15 minutes via GitHub Actions.</p>
+  <div class="topbar">
+    <h1>Fresu <span>Content Engine</span></h1>
+    <button class="btn" id="newBtn">+ New post</button>
+    <button class="btn ghost" id="settingsBtn">⚙ Settings</button>
+  </div>
+  <div id="banner"></div>
+  <div class="viewtabs">
+    <button id="viewList" class="active">List</button>
+    <button id="viewCal">Calendar</button>
+  </div>
   <div class="filters" id="filters"></div>
-  <div id="list"><p class="empty">Loading queue…</p></div>
-  <footer>fresu-content-engine · self-hosted · €0/month</footer>
+  <div id="content"><p class="empty">Loading…</p></div>
+  <footer>fresu-content-engine · self-hosted · €0/month ·
+    <a href="https://github.com/dariofresu/fresu-content-engine" target="_blank">repo</a></footer>
 </main>
+
+<!-- post editor -->
+<div class="overlay" id="editorOverlay">
+  <div class="modal">
+    <h2 id="editorTitle">New post</h2>
+    <label>Title (internal, for the calendar)</label>
+    <input type="text" id="fTitle" placeholder="e.g. EMI probe teaser #3">
+    <label>Media (image or video, max ~40 MB here)</label>
+    <div class="drop" id="drop">Drop a file or click to choose<input type="file" id="fFile" hidden accept="image/*,video/mp4,video/quicktime,video/webm"></div>
+    <label>Platforms</label>
+    <div class="platgrid" id="platgrid"></div>
+    <div class="texttabs" id="texttabs"></div>
+    <textarea id="fText" placeholder="Write the post text…"></textarea>
+    <div class="charcount" id="charcount"></div>
+    <div class="hint" id="masterHint">The <b>Master</b> text is used for every platform unless you customize a platform's tab (marked with •).</div>
+    <label>Schedule (your local time — leave empty to keep as draft)</label>
+    <input type="datetime-local" id="fWhen">
+    <div class="actions">
+      <button class="btn danger" id="deleteBtn" style="margin-right:auto">Delete</button>
+      <button class="btn ghost" id="cancelBtn">Cancel</button>
+      <button class="btn" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- settings -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h2>Settings</h2>
+    <p class="hint">To create and edit posts, this site needs a GitHub token with write access
+      to <b>only</b> this repo. Create one at
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">
+      github.com → fine-grained tokens</a>: Repository access → Only select repositories →
+      <b>fresu-content-engine</b>; Permissions → Repository → <b>Contents: Read and write</b>.
+      The token is stored only in this browser.</p>
+    <label>GitHub fine-grained token</label>
+    <input type="password" id="fToken" placeholder="github_pat_…">
+    <div class="actions">
+      <button class="btn ghost" id="settingsCancel">Cancel</button>
+      <button class="btn" id="settingsSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
+const OWNER = "dariofresu", REPO = "fresu-content-engine", BRANCH = "main";
+const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents`;
+const PLATFORMS = ["x", "linkedin", "facebook", "instagram", "youtube", "tiktok"];
+const LIMITS = { x: 280, linkedin: 3000, facebook: 10000, instagram: 2200, youtube: 5000, tiktok: 2200 };
 const STATUSES = ["all", "draft", "scheduled", "published", "failed"];
-let posts = [], filter = "all";
+
+let queue = { posts: [] }, queueSha = null;
+let view = "list", filter = "all";
+let editing = null;        // post object being edited (working copy)
+let editingIsNew = false;
+let activeTab = "master";  // master | platform name
+let texts = {};            // tab -> text ('' means: use master)
+let pendingFile = null;    // File chosen but not yet uploaded
+let calCursor = new Date();
+
+const $ = id => document.getElementById(id);
+const token = () => localStorage.getItem("fce_token") || "";
+const b64decode = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
+const b64encodeText = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+
+function banner(msg, cls) {
+  $("banner").innerHTML = msg ? `<div class="banner ${cls || ""}">${msg}</div>` : "";
+}
+
+async function gh(path, opts = {}) {
+  const headers = { Accept: "application/vnd.github+json", ...(opts.headers || {}) };
+  if (token()) headers.Authorization = "Bearer " + token();
+  const r = await fetch(`${API}/${path}`, { ...opts, headers });
+  if (!r.ok) throw new Error(`GitHub API ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  return r.json();
+}
+
+async function loadQueue() {
+  try {
+    const j = await gh(`queue/queue.json?ref=${BRANCH}&t=${Date.now()}`);
+    queueSha = j.sha;
+    queue = JSON.parse(b64decode(j.content.replace(/\n/g, "")));
+  } catch (e) {
+    // fall back to raw (rate-limited API without token etc.)
+    const r = await fetch(`queue/queue.json?cachebust=${Date.now()}`);
+    queue = await r.json();
+    queueSha = null;
+  }
+  render();
+}
+
+async function saveQueue(message) {
+  if (queueSha === null) {  // need sha to update
+    const j = await gh(`queue/queue.json?ref=${BRANCH}`);
+    queueSha = j.sha;
+  }
+  const body = {
+    message, branch: BRANCH, sha: queueSha,
+    content: b64encodeText(JSON.stringify(queue, null, 2) + "\n"),
+  };
+  const j = await gh("queue/queue.json", { method: "PUT", body: JSON.stringify(body) });
+  queueSha = j.content.sha;
+}
+
+async function uploadMedia(file, postId) {
+  const ext = file.name.split(".").pop().toLowerCase();
+  const name = `${postId}.${ext}`;
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let bin = "";
+  const CH = 0x8000;
+  for (let i = 0; i < bytes.length; i += CH)
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  const body = { message: `media for ${postId}`, branch: BRANCH, content: btoa(bin) };
+  try {  // overwrite if exists
+    const existing = await gh(`queue/media/${name}?ref=${BRANCH}`);
+    body.sha = existing.sha;
+  } catch (e) {}
+  await gh(`queue/media/${name}`, { method: "PUT", body: JSON.stringify(body) });
+  return `media/${name}`;
+}
+
+/* ---------- rendering ---------- */
 
 function fmt(iso) {
   if (!iso) return "no date";
   return new Date(iso).toLocaleString(undefined,
-    { weekday: "short", day: "numeric", month: "short",
-      hour: "2-digit", minute: "2-digit" });
+    { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-function render() {
-  const list = document.getElementById("list");
-  const shown = posts
-    .filter(p => filter === "all" || p.status === filter)
-    .sort((a, b) => (a.publish_at || "9999").localeCompare(b.publish_at || "9999"));
-  if (!shown.length) { list.innerHTML = '<p class="empty">Nothing here.</p>'; return; }
-  list.innerHTML = shown.map(p => {
-    const platforms = Object.entries(p.platforms || {})
-      .filter(([, c]) => c.enabled)
-      .map(([name]) => {
-        const r = (p.results || {})[name];
-        if (r && r.ok) return `<span class="chip ok"><a href="${r.url}" target="_blank">${name} ✓</a></span>`;
-        if (r && !r.ok) return `<span class="chip err" title="${(r.error || "").replace(/"/g, "&quot;")}">${name} ✗</span>`;
-        return `<span class="chip">${name}</span>`;
-      }).join("");
-    const firstText = Object.values(p.platforms || {}).find(c => c.enabled && c.text)?.text || "";
-    const media = p.media
-      ? (/\.(mp4|mov|webm)$/i.test(p.media)
-          ? `<div class="media"><video src="queue/${p.media}" controls muted></video></div>`
-          : `<div class="media"><img src="queue/${p.media}" alt=""></div>`)
-      : "";
-    return `<article class="post">
-      <header>
-        <h2>${p.title || p.id}</h2>
-        <span class="when">${fmt(p.publish_at)}</span>
-        <span class="status ${p.status}">${p.status}</span>
-      </header>
-      <div class="chips">${platforms}</div>
-      ${firstText ? `<p class="text">${firstText}</p>` : ""}
-      ${media}
-    </article>`;
-  }).join("");
+function mediaTag(p, big) {
+  if (!p.media) return "";
+  const src = `queue/${p.media}`;
+  const vid = /\.(mp4|mov|webm)$/i.test(p.media);
+  return `<div class="pmedia">${vid
+    ? `<video src="${src}" controls muted preload="metadata"></video>`
+    : `<img src="${src}" alt="" loading="lazy">`}</div>`;
 }
 
 function renderFilters() {
-  document.getElementById("filters").innerHTML = STATUSES.map(s =>
-    `<button class="${s === filter ? "active" : ""}" onclick="filter='${s}';renderFilters();render()">${s}</button>`
-  ).join("");
+  $("filters").innerHTML = STATUSES.map(s =>
+    `<button class="${s === filter ? "active" : ""}" data-f="${s}">${s}</button>`).join("");
+  [...$("filters").children].forEach(b =>
+    b.onclick = () => { filter = b.dataset.f; render(); });
 }
 
-const url = location.protocol === "file:"
-  ? "queue/queue.json"
-  : "queue/queue.json?cachebust=" + Date.now();
-fetch(url)
-  .then(r => r.json())
-  .then(d => { posts = d.posts || []; renderFilters(); render(); })
-  .catch(() => {
-    document.getElementById("list").innerHTML = location.protocol === "file:"
-      ? `<p class="empty">You opened this page directly from disk — the browser
-         blocks reading the queue file here.<br>It works on the live GitHub
-         Pages site (or any local server).</p>`
-      : `<p class="empty">Could not load queue/queue.json.</p>`;
+function render() {
+  renderFilters();
+  $("viewList").classList.toggle("active", view === "list");
+  $("viewCal").classList.toggle("active", view === "cal");
+  if (!token()) banner(`Read-only: add a GitHub token in <b>⚙ Settings</b> to create and edit posts.`);
+  view === "list" ? renderList() : renderCal();
+}
+
+function renderList() {
+  const shown = queue.posts
+    .filter(p => filter === "all" || p.status === filter)
+    .sort((a, b) => (a.publish_at || "9999").localeCompare(b.publish_at || "9999"));
+  if (!shown.length) { $("content").innerHTML = `<p class="empty">No posts here yet — hit <b>+ New post</b>.</p>`; return; }
+  $("content").innerHTML = shown.map(p => {
+    const chips = PLATFORMS.filter(n => p.platforms?.[n]?.enabled).map(n => {
+      const r = (p.results || {})[n];
+      if (r?.ok) return `<span class="chip ok"><a href="${r.url}" target="_blank">${n} ✓</a></span>`;
+      if (r && !r.ok) return `<span class="chip err" title="${(r.error || "").replace(/"/g, "&quot;")}">${n} ✗</span>`;
+      return `<span class="chip">${n}</span>`;
+    }).join("");
+    const text = p.platforms ? (Object.values(p.platforms).find(c => c.enabled && c.text)?.text || "") : "";
+    return `<article class="post">
+      <header><h2>${p.title || p.id}</h2>
+        <span class="when">${fmt(p.publish_at)}</span>
+        <span class="status ${p.status}">${p.status}</span></header>
+      <div class="chips">${chips}</div>
+      ${text ? `<p class="ptext">${text}</p>` : ""}
+      ${mediaTag(p)}
+      <div class="rowbtns">
+        <button class="btn ghost small" data-edit="${p.id}">Edit</button>
+        <button class="btn ghost small" data-dup="${p.id}">Duplicate</button>
+      </div>
+    </article>`;
+  }).join("");
+  $("content").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => openEditor(b.dataset.edit));
+  $("content").querySelectorAll("[data-dup]").forEach(b => b.onclick = () => duplicatePost(b.dataset.dup));
+}
+
+function renderCal() {
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  const first = new Date(y, m, 1);
+  const start = new Date(first);
+  start.setDate(1 - ((first.getDay() + 6) % 7)); // Monday start
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  let cells = "";
+  const dows = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d => `<div class="dow">${d}</div>`).join("");
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const inMonth = d.getMonth() === m;
+    const isToday = d.getTime() === today.getTime();
+    const evts = queue.posts.filter(p => {
+      if (!p.publish_at) return false;
+      const pd = new Date(p.publish_at);
+      return pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth() && pd.getDate() === d.getDate();
+    }).map(p => `<span class="evt ${p.status}" data-edit="${p.id}" title="${p.title || p.id}">${p.title || p.id}</span>`).join("");
+    cells += `<div class="day ${inMonth ? "" : "other"} ${isToday ? "today" : ""}">${d.getDate()}${evts}</div>`;
+  }
+  $("content").innerHTML = `
+    <div class="cal-head">
+      <button class="btn ghost small" id="calPrev">‹</button>
+      <h3>${calCursor.toLocaleString(undefined, { month: "long", year: "numeric" })}</h3>
+      <button class="btn ghost small" id="calNext">›</button>
+    </div>
+    <div class="cal">${dows}${cells}</div>`;
+  $("calPrev").onclick = () => { calCursor = new Date(y, m - 1, 1); render(); };
+  $("calNext").onclick = () => { calCursor = new Date(y, m + 1, 1); render(); };
+  $("content").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => openEditor(b.dataset.edit));
+}
+
+/* ---------- editor ---------- */
+
+function blankPost() {
+  const id = new Date().toISOString().slice(0, 10) + "-" + Math.random().toString(36).slice(2, 6);
+  const platforms = {};
+  PLATFORMS.forEach(n => platforms[n] = { enabled: false, text: "" });
+  platforms.youtube.video_title = ""; platforms.youtube.tags = [];
+  return { id, status: "draft", publish_at: null, media: null, title: "", platforms, results: {} };
+}
+
+function openEditor(id) {
+  if (!token()) { openSettings(); return; }
+  editingIsNew = !id;
+  const src = id ? queue.posts.find(p => p.id === id) : blankPost();
+  editing = JSON.parse(JSON.stringify(src));
+  pendingFile = null;
+  activeTab = "master";
+  // derive texts: master = most common text; custom where differing
+  texts = { master: "" };
+  const enabledTexts = PLATFORMS.filter(n => editing.platforms[n]?.enabled).map(n => editing.platforms[n].text);
+  texts.master = enabledTexts[0] || "";
+  PLATFORMS.forEach(n => {
+    const t = editing.platforms[n]?.text || "";
+    texts[n] = (t && t !== texts.master) ? t : "";
   });
+  $("editorTitle").textContent = editingIsNew ? "New post" : "Edit post";
+  $("fTitle").value = editing.title || "";
+  $("fWhen").value = editing.publish_at
+    ? new Date(new Date(editing.publish_at).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+    : "";
+  $("deleteBtn").style.display = editingIsNew ? "none" : "";
+  renderDrop(); renderPlatGrid(); renderTextTabs();
+  $("editorOverlay").classList.add("open");
+}
+
+function renderDrop() {
+  const d = $("drop");
+  if (pendingFile) {
+    const url = URL.createObjectURL(pendingFile);
+    d.classList.add("has");
+    d.innerHTML = `${pendingFile.name} (${(pendingFile.size / 1048576).toFixed(1)} MB)` +
+      (/^video/.test(pendingFile.type) ? `<video src="${url}" muted></video>` : `<img src="${url}">`) +
+      `<input type="file" id="fFile" hidden accept="image/*,video/mp4,video/quicktime,video/webm">`;
+  } else if (editing.media) {
+    d.classList.add("has");
+    const src = `queue/${editing.media}`;
+    d.innerHTML = `${editing.media}` +
+      (/\.(mp4|mov|webm)$/i.test(editing.media) ? `<video src="${src}" muted></video>` : `<img src="${src}">`) +
+      `<input type="file" id="fFile" hidden accept="image/*,video/mp4,video/quicktime,video/webm">`;
+  } else {
+    d.classList.remove("has");
+    d.innerHTML = `Drop a file or click to choose<input type="file" id="fFile" hidden accept="image/*,video/mp4,video/quicktime,video/webm">`;
+  }
+  d.onclick = () => $("fFile").click();
+  $("fFile").onchange = e => { if (e.target.files[0]) setFile(e.target.files[0]); };
+}
+
+function setFile(f) {
+  if (f.size > 40 * 1048576) { alert("Max ~40 MB through the website. For bigger videos, ask Claude to add it from the PC."); return; }
+  pendingFile = f; renderDrop();
+}
+
+function renderPlatGrid() {
+  $("platgrid").innerHTML = PLATFORMS.map(n =>
+    `<span class="plat ${editing.platforms[n].enabled ? "on" : ""}" data-p="${n}">${n}</span>`).join("");
+  $("platgrid").querySelectorAll(".plat").forEach(el => el.onclick = () => {
+    const n = el.dataset.p;
+    editing.platforms[n].enabled = !editing.platforms[n].enabled;
+    renderPlatGrid(); renderTextTabs();
+  });
+}
+
+function renderTextTabs() {
+  const tabs = ["master", ...PLATFORMS.filter(n => editing.platforms[n].enabled)];
+  if (!tabs.includes(activeTab)) activeTab = "master";
+  $("texttabs").innerHTML = tabs.map(t =>
+    `<button class="${t === activeTab ? "active" : ""} ${t !== "master" && texts[t] ? "custom" : ""}"
+       data-t="${t}">${t === "master" ? "Master" : t}</button>`).join("");
+  $("texttabs").querySelectorAll("button").forEach(b => b.onclick = () => {
+    texts[activeTab] = $("fText").value.trim() === texts.master.trim() && activeTab !== "master" ? "" : $("fText").value;
+    if (activeTab === "master") texts.master = $("fText").value;
+    activeTab = b.dataset.t;
+    renderTextTabs();
+  });
+  $("fText").value = activeTab === "master" ? texts.master : (texts[activeTab] || texts.master);
+  updateCount();
+}
+
+function updateCount() {
+  const v = $("fText").value;
+  if (activeTab === "master") {
+    const worst = PLATFORMS.filter(n => editing.platforms[n].enabled && !texts[n])
+      .map(n => LIMITS[n]).sort((a, b) => a - b)[0];
+    const el = $("charcount");
+    el.textContent = worst ? `${v.length} / ${worst} (strictest enabled platform)` : `${v.length}`;
+    el.className = "charcount" + (worst && v.length > worst ? " over" : "");
+  } else {
+    const lim = LIMITS[activeTab];
+    const el = $("charcount");
+    el.textContent = `${v.length} / ${lim}`;
+    el.className = "charcount" + (v.length > lim ? " over" : "");
+  }
+}
+
+async function savePost() {
+  const btn = $("saveBtn");
+  // capture current textarea into texts
+  if (activeTab === "master") texts.master = $("fText").value;
+  else texts[activeTab] = $("fText").value.trim() === texts.master.trim() ? "" : $("fText").value;
+
+  editing.title = $("fTitle").value.trim() || editing.id;
+  const when = $("fWhen").value;
+  editing.publish_at = when ? new Date(when).toISOString() : null;
+  if (editing.status !== "published") {
+    editing.status = editing.publish_at ? "scheduled" : "draft";
+  }
+  PLATFORMS.forEach(n => { editing.platforms[n].text = texts[n] || texts.master; });
+
+  const enabled = PLATFORMS.filter(n => editing.platforms[n].enabled);
+  if (!enabled.length) { alert("Enable at least one platform."); return; }
+  if (enabled.some(n => !editing.platforms[n].text.trim())) { alert("Post text is empty."); return; }
+  const over = enabled.filter(n => editing.platforms[n].text.length > LIMITS[n]);
+  if (over.length) { alert("Text too long for: " + over.join(", ")); return; }
+  if ((editing.platforms.instagram.enabled || editing.platforms.tiktok.enabled || editing.platforms.youtube.enabled)
+      && !editing.media && !pendingFile) {
+    alert("Instagram, TikTok and YouTube need an image/video."); return;
+  }
+  if (editing.platforms.youtube.enabled && !editing.platforms.youtube.video_title)
+    editing.platforms.youtube.video_title = editing.title;
+
+  btn.disabled = true; btn.innerHTML = `<span class="spin">◌</span> Saving…`;
+  try {
+    if (pendingFile) editing.media = await uploadMedia(pendingFile, editing.id);
+    const idx = queue.posts.findIndex(p => p.id === editing.id);
+    if (idx >= 0) queue.posts[idx] = editing; else queue.posts.push(editing);
+    await saveQueue(`${editingIsNew ? "add" : "edit"} post ${editing.id} (${editing.title})`);
+    closeEditor();
+    banner(`Saved. ${editing.status === "scheduled" ? "Publishes " + fmt(editing.publish_at) + " (±15 min)." : "Kept as draft."}`, "ok");
+    render();
+  } catch (e) {
+    alert("Save failed: " + e.message + "\nReloading latest queue…");
+    queueSha = null; await loadQueue();
+  } finally { btn.disabled = false; btn.textContent = "Save"; }
+}
+
+async function deletePost() {
+  if (!confirm("Delete this post from the queue?")) return;
+  queue.posts = queue.posts.filter(p => p.id !== editing.id);
+  try {
+    await saveQueue(`delete post ${editing.id}`);
+    closeEditor(); render();
+  } catch (e) { alert("Delete failed: " + e.message); queueSha = null; await loadQueue(); }
+}
+
+function duplicatePost(id) {
+  if (!token()) { openSettings(); return; }
+  const src = queue.posts.find(p => p.id === id);
+  const copy = JSON.parse(JSON.stringify(src));
+  copy.id = new Date().toISOString().slice(0, 10) + "-" + Math.random().toString(36).slice(2, 6);
+  copy.status = "draft"; copy.publish_at = null; copy.results = {};
+  copy.title = (src.title || src.id) + " (copy)";
+  queue.posts.push(copy);
+  openEditor(copy.id);
+  editingIsNew = true;   // not saved yet
+  queue.posts = queue.posts.filter(p => p.id !== copy.id);
+  editing = copy;
+}
+
+function closeEditor() { $("editorOverlay").classList.remove("open"); editing = null; }
+
+/* ---------- settings ---------- */
+function openSettings() { $("fToken").value = token(); $("settingsOverlay").classList.add("open"); }
+
+/* ---------- wiring ---------- */
+$("newBtn").onclick = () => openEditor(null);
+$("settingsBtn").onclick = openSettings;
+$("cancelBtn").onclick = closeEditor;
+$("saveBtn").onclick = savePost;
+$("deleteBtn").onclick = deletePost;
+$("settingsCancel").onclick = () => $("settingsOverlay").classList.remove("open");
+$("settingsSave").onclick = () => {
+  const v = $("fToken").value.trim();
+  if (v) localStorage.setItem("fce_token", v); else localStorage.removeItem("fce_token");
+  $("settingsOverlay").classList.remove("open");
+  banner("", ""); loadQueue();
+};
+$("viewList").onclick = () => { view = "list"; render(); };
+$("viewCal").onclick = () => { view = "cal"; render(); };
+$("fText").addEventListener("input", updateCount);
+["dragover", "dragenter"].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
+document.addEventListener("drop", e => {
+  e.preventDefault();
+  if ($("editorOverlay").classList.contains("open") && e.dataTransfer.files[0])
+    setFile(e.dataTransfer.files[0]);
+});
+
+loadQueue().catch(e => $("content").innerHTML = `<p class="empty">Could not load queue: ${e.message}</p>`);
 </script>
 </body>
 </html>
